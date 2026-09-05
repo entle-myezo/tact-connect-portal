@@ -18,7 +18,7 @@ import { CATEGORIES, CHURCH } from "@/data/church";
 import { useChurchStore } from "@/lib/church-store";
 import { MONTHS, byDate, isPast, matchesSearch, monthOf } from "@/lib/event-utils";
 
-export const Route = createFileRoute("/events")({
+export const Route = createFileRoute("/events/")({
   head: () => ({
     meta: [
       { title: "Events — TACT Connect 2026 Diary of Events" },
