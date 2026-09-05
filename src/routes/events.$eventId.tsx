@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Bookmark, BookmarkCheck, CalendarDays, MapPin, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -128,4 +128,3 @@ function EventDetailPage() {
   );
 }
 
-void notFound;
