@@ -271,7 +271,8 @@ export function ChurchStoreProvider({ children }: { children: ReactNode }) {
           ministries: OFFICIAL_MINISTRIES,
         })),
     };
-  }, [state, hydrated]);
+  }, [state, hydrated, userId, registrations]);
+
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
