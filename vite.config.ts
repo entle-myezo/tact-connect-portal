@@ -19,7 +19,9 @@ export default defineConfig({
         strategies: "generateSW",
         registerType: "autoUpdate",
         injectRegister: null,
+        outDir: "dist/client",
         filename: "sw.js",
+
         devOptions: { enabled: false },
         manifest: {
           id: "/",
