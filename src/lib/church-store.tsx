@@ -49,6 +49,11 @@ const initialState: StoreState = {
 
 interface StoreContextValue extends StoreState {
   hydrated: boolean;
+  signedIn: boolean;
+  registrations: string[];
+  isRegistered: (eventId: string) => boolean;
+  registerForEvent: (eventId: string) => Promise<"registered" | "duplicate" | "signed-out">;
+  cancelRegistration: (eventId: string) => Promise<void>;
   toggleSaved: (eventId: string) => boolean;
   isSaved: (eventId: string) => boolean;
   removeSaved: (eventId: string) => void;
@@ -64,6 +69,7 @@ interface StoreContextValue extends StoreState {
   deleteMinistry: (id: string) => void;
   resetToOfficial: () => void;
 }
+
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
