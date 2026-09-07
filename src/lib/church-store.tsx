@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -15,6 +16,9 @@ import {
   type ChurchEvent,
   type Ministry,
 } from "@/data/church";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+
 
 export interface Reminder {
   id: string;
