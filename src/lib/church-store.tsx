@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -15,6 +16,9 @@ import {
   type ChurchEvent,
   type Ministry,
 } from "@/data/church";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+
 
 export interface Reminder {
   id: string;
@@ -45,6 +49,11 @@ const initialState: StoreState = {
 
 interface StoreContextValue extends StoreState {
   hydrated: boolean;
+  signedIn: boolean;
+  registrations: string[];
+  isRegistered: (eventId: string) => boolean;
+  registerForEvent: (eventId: string) => Promise<"registered" | "duplicate" | "signed-out">;
+  cancelRegistration: (eventId: string) => Promise<void>;
   toggleSaved: (eventId: string) => boolean;
   isSaved: (eventId: string) => boolean;
   removeSaved: (eventId: string) => void;
@@ -60,6 +69,7 @@ interface StoreContextValue extends StoreState {
   deleteMinistry: (id: string) => void;
   resetToOfficial: () => void;
 }
+
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
@@ -101,24 +111,105 @@ export function ChurchStoreProvider({ children }: { children: ReactNode }) {
     }
   }, [state, hydrated]);
 
+  // ---- Member account sync (saved events + registrations) ----
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const userIdRef = useRef<string | null>(null);
+  userIdRef.current = userId;
+  const [registrations, setRegistrations] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!userId) {
+      setRegistrations([]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const localSaved = state.saved;
+      if (localSaved.length) {
+        await supabase
+          .from("saved_events")
+          .upsert(
+            localSaved.map((event_id) => ({ user_id: userId, event_id })),
+            { onConflict: "user_id,event_id", ignoreDuplicates: true },
+          );
+      }
+      const [{ data: savedRows }, { data: regRows }] = await Promise.all([
+        supabase.from("saved_events").select("event_id").eq("user_id", userId),
+        supabase.from("event_registrations").select("event_id").eq("user_id", userId),
+      ]);
+      if (cancelled) return;
+      if (savedRows) {
+        const ids = savedRows.map((r) => r.event_id);
+        setState((s) => ({ ...s, saved: Array.from(new Set([...ids, ...s.saved])) }));
+      }
+      setRegistrations((regRows ?? []).map((r) => r.event_id));
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally runs on sign-in / sign-out only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, hydrated]);
+
   const stamp = () => new Date().toISOString();
 
   const value = useMemo<StoreContextValue>(() => {
     const isSaved = (eventId: string) => state.saved.includes(eventId);
+    const syncSaved = (eventId: string, next: boolean) => {
+      const uid = userIdRef.current;
+      if (!uid) return;
+      if (next) {
+        void supabase
+          .from("saved_events")
+          .upsert({ user_id: uid, event_id: eventId }, { onConflict: "user_id,event_id" });
+      } else {
+        void supabase.from("saved_events").delete().eq("user_id", uid).eq("event_id", eventId);
+      }
+    };
     return {
       ...state,
       hydrated,
       isSaved,
+      signedIn: Boolean(userId),
+      registrations,
+      isRegistered: (eventId: string) => registrations.includes(eventId),
+      registerForEvent: async (eventId: string) => {
+        const uid = userIdRef.current;
+        if (!uid) return "signed-out";
+        if (registrations.includes(eventId)) return "duplicate";
+        const { error } = await supabase
+          .from("event_registrations")
+          .insert({ user_id: uid, event_id: eventId });
+        if (error && !error.message.includes("duplicate")) throw error;
+        setRegistrations((r) => (r.includes(eventId) ? r : [...r, eventId]));
+        return error ? "duplicate" : "registered";
+      },
+      cancelRegistration: async (eventId: string) => {
+        const uid = userIdRef.current;
+        if (!uid) return;
+        await supabase
+          .from("event_registrations")
+          .delete()
+          .eq("user_id", uid)
+          .eq("event_id", eventId);
+        setRegistrations((r) => r.filter((id) => id !== eventId));
+      },
       toggleSaved: (eventId: string) => {
         const next = !isSaved(eventId);
         setState((s) => ({
           ...s,
           saved: next ? [...s.saved, eventId] : s.saved.filter((id) => id !== eventId),
         }));
+        syncSaved(eventId, next);
         return next;
       },
-      removeSaved: (eventId: string) =>
-        setState((s) => ({ ...s, saved: s.saved.filter((id) => id !== eventId) })),
+      removeSaved: (eventId: string) => {
+        setState((s) => ({ ...s, saved: s.saved.filter((id) => id !== eventId) }));
+        syncSaved(eventId, false);
+      },
+
       addReminder: (eventId: string, daysBefore: number) =>
         setState((s) => ({
           ...s,
@@ -180,7 +271,8 @@ export function ChurchStoreProvider({ children }: { children: ReactNode }) {
           ministries: OFFICIAL_MINISTRIES,
         })),
     };
-  }, [state, hydrated]);
+  }, [state, hydrated, userId, registrations]);
+
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
