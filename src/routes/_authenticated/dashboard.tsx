@@ -58,7 +58,7 @@ function DashboardPage() {
   const importantDates = upcoming(events)
     .filter((e) => e.isImportantDate)
     .slice(0, 5);
-  const notices = announcements.filter((a) => a.published !== false).slice(0, 3);
+  const notices = announcements.filter((a) => a.published).slice(0, 3);
 
   return (
     <div className="space-y-10">
@@ -143,7 +143,7 @@ function DashboardPage() {
             {notices.map((a) => (
               <li key={a.id} className="card-elegant p-5">
                 <h3 className="text-xl font-semibold">{a.title}</h3>
-                <p className="mt-1 text-base text-muted-foreground">{a.body}</p>
+                <p className="mt-1 text-base text-muted-foreground">{a.message}</p>
               </li>
             ))}
           </ul>
