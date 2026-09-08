@@ -13,6 +13,9 @@ import {
   Search,
   Menu,
   X,
+  LayoutDashboard,
+  UserRound,
+  LogIn,
 } from "lucide-react";
 import logo from "@/assets/tact-logo.png.asset.json";
 import { CHURCH } from "@/data/church";
@@ -20,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChurchStore } from "@/lib/church-store";
+import { firstName, useAuth } from "@/lib/auth";
+
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
@@ -49,6 +54,38 @@ export function ChurchMark({ className }: { className?: string }) {
   );
 }
 
+function AccountLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const { session, profile } = useAuth();
+  const linkClass =
+    "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-foreground transition-colors hover:bg-sidebar-accent";
+  const activeProps = { className: "bg-primary text-primary-foreground hover:bg-primary" };
+
+  return (
+    <>
+      <p className="px-4 pt-5 pb-2 text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
+        {session ? "My account" : "Member area"}
+      </p>
+      {session ? (
+        <>
+          <Link to="/dashboard" onClick={onNavigate} className={linkClass} activeProps={activeProps}>
+            <LayoutDashboard className="size-5 shrink-0" aria-hidden="true" />
+            {firstName(profile)}&apos;s Dashboard
+          </Link>
+          <Link to="/profile" onClick={onNavigate} className={linkClass} activeProps={activeProps}>
+            <UserRound className="size-5 shrink-0" aria-hidden="true" />
+            My Profile
+          </Link>
+        </>
+      ) : (
+        <Link to="/auth" onClick={onNavigate} className={linkClass} activeProps={activeProps}>
+          <LogIn className="size-5 shrink-0" aria-hidden="true" />
+          Login / Join TACT Connect
+        </Link>
+      )}
+    </>
+  );
+}
+
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const { isAdmin } = useChurchStore();
   return (
@@ -66,6 +103,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           {label}
         </Link>
       ))}
+      <AccountLinks {...(onNavigate ? { onNavigate } : {})} />
       {isAdmin && (
         <>
           <p className="px-4 pt-5 pb-2 text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
@@ -85,6 +123,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     </nav>
   );
 }
+
 
 function Brand({ compact }: { compact?: boolean }) {
   return (
