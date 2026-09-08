@@ -14,6 +14,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerServiceWorker } from "../lib/register-sw";
 
 import { ChurchStoreProvider } from "@/lib/church-store";
+import { AuthProvider } from "@/lib/auth";
+
 import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -141,13 +143,16 @@ function RootComponent() {
   return (
 
     <QueryClientProvider client={queryClient}>
-      <ChurchStoreProvider>
-        <AppShell>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </AppShell>
-        <Toaster richColors position="top-center" />
-      </ChurchStoreProvider>
+      <AuthProvider>
+        <ChurchStoreProvider>
+          <AppShell>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </AppShell>
+          <Toaster richColors position="top-center" />
+        </ChurchStoreProvider>
+      </AuthProvider>
     </QueryClientProvider>
+
   );
 }
