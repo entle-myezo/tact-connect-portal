@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Bookmark, BookmarkCheck, CalendarDays, MapPin, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Bookmark,
+  BookmarkCheck,
+  CalendarDays,
+  MapPin,
+  Ticket,
+  TicketCheck,
+  Users,
+} from "lucide-react";
+
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CategoryBadge, StatusBadge } from "@/components/StatusBadge";
