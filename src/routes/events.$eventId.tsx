@@ -39,8 +39,19 @@ export const Route = createFileRoute("/events/$eventId")({
 
 function EventDetailPage() {
   const { eventId } = Route.useParams();
-  const { events, isSaved, toggleSaved, hydrated, remindersFor, removeReminder } =
-    useChurchStore();
+  const {
+    events,
+    isSaved,
+    toggleSaved,
+    hydrated,
+    remindersFor,
+    removeReminder,
+    signedIn,
+    isRegistered,
+    registerForEvent,
+    cancelRegistration,
+  } = useChurchStore();
+
   const event = events.find((e) => e.id === eventId);
 
   if (!event) {
