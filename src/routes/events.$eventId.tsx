@@ -70,6 +70,8 @@ function EventDetailPage() {
 
   const saved = hydrated && isSaved(event.id);
   const reminders = hydrated ? remindersFor(event.id) : [];
+  const registered = isRegistered(event.id);
+
 
   return (
     <article className="space-y-8">
