@@ -66,6 +66,43 @@ function MyEventsPage() {
           </section>
 
           <section>
+            <h2 className="text-3xl">My registered events</h2>
+            <div className="gold-rule mt-3 mb-5" />
+            {registeredEvents.length ? (
+              <ul className="space-y-3">
+                {registeredEvents.map((e) => (
+                  <li
+                    key={e.id}
+                    className="card-elegant flex flex-wrap items-center justify-between gap-3 p-5"
+                  >
+                    <span>
+                      <Link
+                        to="/events/$eventId"
+                        params={{ eventId: e.id }}
+                        className="block text-xl font-semibold hover:underline"
+                      >
+                        {e.title}
+                      </Link>
+                      <span className="block text-base text-muted-foreground">
+                        {e.dateDisplay}
+                      </span>
+                    </span>
+                    <Button variant="outline" onClick={() => void cancelRegistration(e.id)}>
+                      Cancel registration
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="card-elegant p-8 text-center text-lg text-muted-foreground">
+                You have not registered for any events yet.
+              </p>
+            )}
+          </section>
+
+
+
+          <section>
             <h2 className="text-3xl">Reminders</h2>
             <div className="gold-rule mt-3 mb-5" />
             {reminders.length ? (
