@@ -76,9 +76,9 @@ function ProfilePage() {
     setSavingPassword(true);
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
-      // @ts-expect-error current_password is supported by Lovable Cloud auth
       current_password: currentPassword,
-    });
+    } as Parameters<typeof supabase.auth.updateUser>[0]);
+
     setSavingPassword(false);
     if (error) {
       toast.error("Could not change your password", { description: error.message });

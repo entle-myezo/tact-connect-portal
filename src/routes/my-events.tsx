@@ -26,8 +26,11 @@ export const Route = createFileRoute("/my-events")({
 });
 
 function MyEventsPage() {
-  const { events, saved, reminders, removeReminder, hydrated } = useChurchStore();
+  const { events, saved, reminders, removeReminder, hydrated, registrations, cancelRegistration } =
+    useChurchStore();
   const savedEvents = events.filter((e) => saved.includes(e.id)).sort(byDate);
+  const registeredEvents = events.filter((e) => registrations.includes(e.id)).sort(byDate);
+
 
   return (
     <div className="space-y-10">
@@ -61,6 +64,43 @@ function MyEventsPage() {
               </div>
             )}
           </section>
+
+          <section>
+            <h2 className="text-3xl">My registered events</h2>
+            <div className="gold-rule mt-3 mb-5" />
+            {registeredEvents.length ? (
+              <ul className="space-y-3">
+                {registeredEvents.map((e) => (
+                  <li
+                    key={e.id}
+                    className="card-elegant flex flex-wrap items-center justify-between gap-3 p-5"
+                  >
+                    <span>
+                      <Link
+                        to="/events/$eventId"
+                        params={{ eventId: e.id }}
+                        className="block text-xl font-semibold hover:underline"
+                      >
+                        {e.title}
+                      </Link>
+                      <span className="block text-base text-muted-foreground">
+                        {e.dateDisplay}
+                      </span>
+                    </span>
+                    <Button variant="outline" onClick={() => void cancelRegistration(e.id)}>
+                      Cancel registration
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="card-elegant p-8 text-center text-lg text-muted-foreground">
+                You have not registered for any events yet.
+              </p>
+            )}
+          </section>
+
+
 
           <section>
             <h2 className="text-3xl">Reminders</h2>
