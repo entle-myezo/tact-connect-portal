@@ -106,7 +106,41 @@ function EventDetailPage() {
           )}
         </Button>
         <ReminderDialog event={event} />
+        {registered ? (
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={async () => {
+              await cancelRegistration(event.id);
+              toast.success("Registration cancelled", { description: event.title });
+            }}
+          >
+            <TicketCheck className="size-5" aria-hidden="true" /> You are registered — cancel
+          </Button>
+        ) : signedIn ? (
+          <Button
+            size="lg"
+            variant="secondary"
+            onClick={async () => {
+              const result = await registerForEvent(event.id);
+              if (result === "duplicate") {
+                toast.info("You are already registered for this event");
+              } else if (result === "registered") {
+                toast.success("You are registered", { description: event.title });
+              }
+            }}
+          >
+            <Ticket className="size-5" aria-hidden="true" /> Register for event
+          </Button>
+        ) : (
+          <Button asChild size="lg" variant="secondary">
+            <Link to="/auth">
+              <Ticket className="size-5" aria-hidden="true" /> Log in to register
+            </Link>
+          </Button>
+        )}
       </section>
+
 
       {reminders.length > 0 && (
         <section className="card-elegant p-6">
