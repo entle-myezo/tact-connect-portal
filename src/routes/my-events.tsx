@@ -26,8 +26,11 @@ export const Route = createFileRoute("/my-events")({
 });
 
 function MyEventsPage() {
-  const { events, saved, reminders, removeReminder, hydrated } = useChurchStore();
+  const { events, saved, reminders, removeReminder, hydrated, registrations, cancelRegistration } =
+    useChurchStore();
   const savedEvents = events.filter((e) => saved.includes(e.id)).sort(byDate);
+  const registeredEvents = events.filter((e) => registrations.includes(e.id)).sort(byDate);
+
 
   return (
     <div className="space-y-10">
